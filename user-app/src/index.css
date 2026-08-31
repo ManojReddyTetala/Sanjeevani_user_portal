@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: #F4F7F6;
+    color: #1E293B;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 440px;
+  border-radius: 1.25rem;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.high-contrast {
+  filter: contrast(125%);
+}
+
+/* Subtle Indian Tricolour Accent Line */
+.tricolour-strip {
+  height: 3.5px;
+  background: linear-gradient(to right, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%);
+}
+
+/* Professional Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00695C;
+}
+
+/* Modern Card Hover Effects */
+.healthcare-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.healthcare-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 105, 92, 0.08), 0 8px 10px -6px rgba(0, 105, 92, 0.04);
+}

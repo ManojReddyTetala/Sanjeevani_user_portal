@@ -1,0 +1,26 @@
+{
+  "name": "sih-healthcare-backend",
+  "version": "1.0.0",
+  "description": "Integrated Healthcare Discovery and Clinical Continuity Platform API",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "seed": "ts-node src/seed.ts"
+  },
+  "dependencies": {
+    "@types/pdfkit": "^0.17.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pdfkit": "^0.20.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}

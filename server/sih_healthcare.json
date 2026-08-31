@@ -1,0 +1,595 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "rajesh@example.com",
+      "salt": "c89bc9856b5422663f19b95fbc19aa5c",
+      "password_hash": "90e547053d1c43e14fbe61419d48132064b810e2b994f7218ce37a9e2bd02b4fe33e77068acc271298142955bd04749205b2a89167cc0162efa085c1e675f5e2",
+      "role": "patient",
+      "name": "Rajesh Kumar",
+      "patient_id": 1,
+      "token": "0a7352847295eae4ef5b8f9c00ee06997d19c7733088e84a2771549259885a99",
+      "token_expires_at": "2026-08-31T06:42:57.222Z"
+    },
+    {
+      "id": 2,
+      "email": "sunita@hospital.org",
+      "salt": "e21bf55c5010ac05557a65b344b23e4c",
+      "password_hash": "369e1ca53f6a3f8d607458eeddbe1a8d73bcad346122b29236a9c85284f00c16a52119896ec9690c7f0a7c99ab8f7173f2c5d9c298b469a30a8751f2242ae1f1",
+      "role": "doctor",
+      "name": "Dr. Sunita Rani",
+      "doctor_id": 10,
+      "hospital_id": 6,
+      "token": "78fbfe34472fee3963649ea1e4e683c307a3962ebc9ef4ae64c4a54f3427790f",
+      "token_expires_at": "2026-08-31T06:42:57.222Z"
+    },
+    {
+      "id": 3,
+      "email": "admin@aiims.edu",
+      "salt": "38865f7ed447080f933f10c2151614d4",
+      "password_hash": "9086f2cddae4bc56c5a2ca34930c576cbf04f3be82de6eb89756eac794e69f3894b14f50efb6ea75d56f8b917f3c378e7e69625dc916896610fbba647f7b144d",
+      "role": "admin",
+      "name": "AIIMS Facility Admin",
+      "hospital_id": 1,
+      "token": "2cf965cf0b7a5818d9d35144d811146a86c2be5fe45fbd17d68b2b105c7137d1",
+      "token_expires_at": "2026-08-31T06:42:57.222Z"
+    }
+  ],
+  "patients": [
+    {
+      "id": 1,
+      "uid": "UID-IND-9842-7104",
+      "name": "Rajesh Kumar",
+      "age": 48,
+      "gender": "Male",
+      "blood_group": "O+",
+      "phone": "+91-9876543210",
+      "emergency_contact": "Sita Kumar (Wife) +91-9876543211",
+      "language": "hi",
+      "qr_token": "QR-PAT-9842-7104-SECURE",
+      "created_at": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 2,
+      "uid": "UID-IND-5412-8890",
+      "name": "Sunita Devi",
+      "age": 62,
+      "gender": "Female",
+      "blood_group": "B+",
+      "phone": "+91-9812345678",
+      "emergency_contact": "Ramesh Devi (Son) +91-9812345679",
+      "language": "hi",
+      "qr_token": "QR-PAT-5412-8890-SECURE",
+      "created_at": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 3,
+      "uid": "UID-IND-3109-4421",
+      "name": "Ananya Banerjee",
+      "age": 31,
+      "gender": "Female",
+      "blood_group": "A+",
+      "phone": "+91-9903124567",
+      "emergency_contact": "Debashis Banerjee +91-9903124568",
+      "language": "bn",
+      "qr_token": "QR-PAT-3109-4421-SECURE",
+      "created_at": "2026-08-30T06:42:57.462Z"
+    }
+  ],
+  "hospitals": [
+    {
+      "id": 1,
+      "name": "All India Institute of Medical Sciences (AIIMS)",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "address": "Sri Aurobindo Marg, Ansari Nagar, New Delhi - 110029",
+      "latitude": 28.5672,
+      "longitude": 77.21,
+      "phone": "+91-11-26588500",
+      "emergency_number": "102 / +91-11-26588700",
+      "facility_type": "Government Apex Hospital"
+    },
+    {
+      "id": 2,
+      "name": "Safdarjung Hospital & VMMMC",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "address": "Ring Road, Opposite AIIMS, New Delhi - 110029",
+      "latitude": 28.5684,
+      "longitude": 77.2064,
+      "phone": "+91-11-26165060",
+      "emergency_number": "102 / +91-11-26168336",
+      "facility_type": "Public Government Hospital"
+    },
+    {
+      "id": 3,
+      "name": "Max Super Speciality Hospital, Saket",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "address": "1, 2 Press Enclave Road, Saket, New Delhi - 110017",
+      "latitude": 28.5282,
+      "longitude": 77.212,
+      "phone": "+91-11-26515050",
+      "emergency_number": "+91-11-40554055",
+      "facility_type": "Private Super Speciality"
+    },
+    {
+      "id": 4,
+      "name": "Fortis Escorts Heart Institute",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "address": "Okhla Road, Sukhdev Vihar, New Delhi - 110025",
+      "latitude": 28.5606,
+      "longitude": 77.275,
+      "phone": "+91-11-47135000",
+      "emergency_number": "105010",
+      "facility_type": "Specialized Cardiac Centre"
+    },
+    {
+      "id": 5,
+      "name": "District Civil Hospital, Gurgaon",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "address": "Sector 10A, Near Hero Honda Chowk, Gurugram - 122001",
+      "latitude": 28.4595,
+      "longitude": 77.0266,
+      "phone": "+91-124-2322412",
+      "emergency_number": "108",
+      "facility_type": "District Government Hospital"
+    },
+    {
+      "id": 6,
+      "name": "Community Health Centre (CHC) Ballabhgarh",
+      "city": "Faridabad",
+      "state": "Haryana",
+      "address": "Main Market Road, Ballabhgarh, Faridabad - 121004",
+      "latitude": 28.3414,
+      "longitude": 77.3328,
+      "phone": "+91-129-2241520",
+      "emergency_number": "108",
+      "facility_type": "Rural Community Health Centre"
+    },
+    {
+      "id": 7,
+      "name": "Sub-District Hospital, Jhajjar",
+      "city": "Jhajjar",
+      "state": "Haryana",
+      "address": "Rohtak Road, Jhajjar - 124103",
+      "latitude": 28.6063,
+      "longitude": 76.6566,
+      "phone": "+91-1251-252104",
+      "emergency_number": "108",
+      "facility_type": "Sub-District Public Hospital"
+    },
+    {
+      "id": 8,
+      "name": "Apex Diagnostic & MRI Research Centre",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "address": "C-45 South Extension Part 2, New Delhi - 110049",
+      "latitude": 28.57,
+      "longitude": 77.22,
+      "phone": "+91-11-41648899",
+      "emergency_number": "+91-11-41648800",
+      "facility_type": "Standalone Diagnostic Centre"
+    }
+  ],
+  "hospital_resources": [
+    {
+      "id": 1,
+      "hospital_id": 1,
+      "icu_beds": 45,
+      "general_beds": 220,
+      "oxygen_cylinders": 150,
+      "ambulances": 12,
+      "doctors_on_duty": 35,
+      "status": "AVAILABLE",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 2,
+      "hospital_id": 2,
+      "icu_beds": 12,
+      "general_beds": 85,
+      "oxygen_cylinders": 40,
+      "ambulances": 6,
+      "doctors_on_duty": 18,
+      "status": "LIMITED",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 3,
+      "hospital_id": 3,
+      "icu_beds": 30,
+      "general_beds": 150,
+      "oxygen_cylinders": 100,
+      "ambulances": 8,
+      "doctors_on_duty": 25,
+      "status": "AVAILABLE",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 4,
+      "hospital_id": 4,
+      "icu_beds": 25,
+      "general_beds": 110,
+      "oxygen_cylinders": 80,
+      "ambulances": 5,
+      "doctors_on_duty": 20,
+      "status": "AVAILABLE",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 5,
+      "hospital_id": 5,
+      "icu_beds": 5,
+      "general_beds": 35,
+      "oxygen_cylinders": 20,
+      "ambulances": 3,
+      "doctors_on_duty": 8,
+      "status": "LIMITED",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 6,
+      "hospital_id": 6,
+      "icu_beds": 0,
+      "general_beds": 8,
+      "oxygen_cylinders": 4,
+      "ambulances": 1,
+      "doctors_on_duty": 2,
+      "status": "UNAVAILABLE",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 7,
+      "hospital_id": 7,
+      "icu_beds": 2,
+      "general_beds": 18,
+      "oxygen_cylinders": 12,
+      "ambulances": 2,
+      "doctors_on_duty": 4,
+      "status": "LIMITED",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 8,
+      "hospital_id": 8,
+      "icu_beds": 0,
+      "general_beds": 0,
+      "oxygen_cylinders": 10,
+      "ambulances": 2,
+      "doctors_on_duty": 5,
+      "status": "AVAILABLE",
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    }
+  ],
+  "doctors": [
+    {
+      "id": 1,
+      "hospital_id": 1,
+      "name": "Dr. Ritu Sharma",
+      "specialty": "Cardiologist",
+      "registration_no": "DMC-45120",
+      "phone": "+91-9811022334",
+      "is_on_duty": 1
+    },
+    {
+      "id": 2,
+      "hospital_id": 1,
+      "name": "Dr. Anish Mehta",
+      "specialty": "Neurologist",
+      "registration_no": "DMC-38910",
+      "phone": "+91-9811022335",
+      "is_on_duty": 1
+    },
+    {
+      "id": 3,
+      "hospital_id": 1,
+      "name": "Dr. S. K. Gupta",
+      "specialty": "Orthopedist",
+      "registration_no": "DMC-12045",
+      "phone": "+91-9811022336",
+      "is_on_duty": 1
+    },
+    {
+      "id": 4,
+      "hospital_id": 2,
+      "name": "Dr. Priya Varma",
+      "specialty": "Pediatrician",
+      "registration_no": "DMC-56102",
+      "phone": "+91-9871033441",
+      "is_on_duty": 1
+    },
+    {
+      "id": 5,
+      "hospital_id": 2,
+      "name": "Dr. Ramesh Chandra",
+      "specialty": "General Physician",
+      "registration_no": "DMC-23091",
+      "phone": "+91-9871033442",
+      "is_on_duty": 1
+    },
+    {
+      "id": 6,
+      "hospital_id": 3,
+      "name": "Dr. Vikram Malhotra",
+      "specialty": "Cardiologist",
+      "registration_no": "DMC-67104",
+      "phone": "+91-9910044551",
+      "is_on_duty": 1
+    },
+    {
+      "id": 7,
+      "hospital_id": 3,
+      "name": "Dr. Neha Kapoor",
+      "specialty": "Pulmonologist",
+      "registration_no": "DMC-78105",
+      "phone": "+91-9910044552",
+      "is_on_duty": 1
+    },
+    {
+      "id": 8,
+      "hospital_id": 4,
+      "name": "Dr. Ashok Sethi",
+      "specialty": "Cardiologist",
+      "registration_no": "DMC-11002",
+      "phone": "+91-9810055661",
+      "is_on_duty": 1
+    },
+    {
+      "id": 9,
+      "hospital_id": 5,
+      "name": "Dr. Vijay Singh",
+      "specialty": "General Surgeon",
+      "registration_no": "HN-89012",
+      "phone": "+91-9812066771",
+      "is_on_duty": 1
+    },
+    {
+      "id": 10,
+      "hospital_id": 6,
+      "name": "Dr. Sunita Rani",
+      "specialty": "Medical Officer (General)",
+      "registration_no": "HN-90123",
+      "phone": "+91-9813077881",
+      "is_on_duty": 1
+    }
+  ],
+  "diagnostic_services": [
+    {
+      "id": 1,
+      "hospital_id": 1,
+      "service_name": "MRI Scan 3T",
+      "category": "Radiology & Imaging",
+      "status": "AVAILABLE",
+      "wait_time_mins": 30,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 2,
+      "hospital_id": 1,
+      "service_name": "CT Scan 128 Slice",
+      "category": "Radiology & Imaging",
+      "status": "AVAILABLE",
+      "wait_time_mins": 15,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 3,
+      "hospital_id": 1,
+      "service_name": "Digital X-Ray",
+      "category": "Radiology",
+      "status": "AVAILABLE",
+      "wait_time_mins": 10,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 4,
+      "hospital_id": 1,
+      "service_name": "Comprehensive Blood Panel",
+      "category": "Pathology",
+      "status": "AVAILABLE",
+      "wait_time_mins": 5,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 5,
+      "hospital_id": 2,
+      "service_name": "CT Scan 64 Slice",
+      "category": "Radiology & Imaging",
+      "status": "LIMITED",
+      "wait_time_mins": 90,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 6,
+      "hospital_id": 2,
+      "service_name": "Digital X-Ray",
+      "category": "Radiology",
+      "status": "AVAILABLE",
+      "wait_time_mins": 25,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 7,
+      "hospital_id": 3,
+      "service_name": "MRI Scan 1.5T",
+      "category": "Radiology & Imaging",
+      "status": "AVAILABLE",
+      "wait_time_mins": 20,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 8,
+      "hospital_id": 3,
+      "service_name": "ECG & Echo",
+      "category": "Cardiology Diagnostics",
+      "status": "AVAILABLE",
+      "wait_time_mins": 10,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 9,
+      "hospital_id": 4,
+      "service_name": "Coronary Angiography",
+      "category": "Cardiology Diagnostics",
+      "status": "AVAILABLE",
+      "wait_time_mins": 15,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 10,
+      "hospital_id": 5,
+      "service_name": "Ultrasound Scan",
+      "category": "Radiology",
+      "status": "LIMITED",
+      "wait_time_mins": 45,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 11,
+      "hospital_id": 5,
+      "service_name": "Basic Pathology & Blood Test",
+      "category": "Pathology",
+      "status": "AVAILABLE",
+      "wait_time_mins": 20,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 12,
+      "hospital_id": 6,
+      "service_name": "Basic Blood & Sugar Test",
+      "category": "Pathology",
+      "status": "AVAILABLE",
+      "wait_time_mins": 15,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 13,
+      "hospital_id": 8,
+      "service_name": "MRI Scan 3T Ultra",
+      "category": "Radiology & Imaging",
+      "status": "AVAILABLE",
+      "wait_time_mins": 10,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    },
+    {
+      "id": 14,
+      "hospital_id": 8,
+      "service_name": "CT Scan High Res",
+      "category": "Radiology & Imaging",
+      "status": "AVAILABLE",
+      "wait_time_mins": 15,
+      "last_updated": "2026-08-30T06:42:57.462Z"
+    }
+  ],
+  "medical_records": [
+    {
+      "id": 1,
+      "patient_id": 1,
+      "doctor_id": 10,
+      "hospital_name": "Community Health Centre Ballabhgarh",
+      "record_type": "Consultation",
+      "title": "Acute Chest Pain & Breathlessness Initial Evaluation",
+      "diagnosis": "Suspected Angina / Ischemic Heart Disease",
+      "notes": "Patient presented with 2-hour onset of substernal chest discomfort radiating to left shoulder. Pulse 98 bpm, BP 145/90 mmHg. CHC lacks cardiac catheterization lab and ICU bed is currently unavailable. Urgent referral required to AIIMS Cardiology.",
+      "prescription_data": [
+        {
+          "medicine": "Tab. Aspirin",
+          "dosage": "300 mg",
+          "duration": "Stat"
+        },
+        {
+          "medicine": "Tab. Clopidogrel",
+          "dosage": "300 mg",
+          "duration": "Stat"
+        },
+        {
+          "medicine": "Tab. Sorbitrate",
+          "dosage": "5 mg Sublingual",
+          "duration": "SOS for pain"
+        }
+      ],
+      "created_at": "2026-08-30T02:42:57.462Z",
+      "created_by": "Dr. Sunita Rani",
+      "version": 1
+    },
+    {
+      "id": 2,
+      "patient_id": 1,
+      "doctor_id": 10,
+      "hospital_name": "Community Health Centre Ballabhgarh",
+      "record_type": "Lab Report",
+      "title": "Emergency 12-Lead ECG & Blood Sugar",
+      "diagnosis": "ST Segment Depression in V3-V5",
+      "notes": "ECG confirms subendocardial ischemia. Random Blood Sugar: 165 mg/dL. Troponin-I test pending.",
+      "prescription_data": [],
+      "created_at": "2026-08-30T03:42:57.462Z",
+      "created_by": "Dr. Sunita Rani",
+      "version": 1
+    },
+    {
+      "id": 3,
+      "patient_id": 2,
+      "doctor_id": 5,
+      "hospital_name": "Safdarjung Hospital",
+      "record_type": "Consultation",
+      "title": "Chronic Osteoarthritis Knee Follow-Up",
+      "diagnosis": "Bilateral Primary Osteoarthritis Grade 3",
+      "notes": "Patient reports severe knee stiffness and inability to walk without support. Managed conservatively with analgesics and quadriceps strengthening exercises.",
+      "prescription_data": [
+        {
+          "medicine": "Tab. Paracetamol",
+          "dosage": "650 mg",
+          "duration": "TDS after food"
+        },
+        {
+          "medicine": "Cap. Omeprazole",
+          "dosage": "20 mg",
+          "duration": "OD Before breakfast"
+        }
+      ],
+      "created_at": "2026-08-28T06:42:57.462Z",
+      "created_by": "Dr. Ramesh Chandra",
+      "version": 1
+    }
+  ],
+  "referrals": [
+    {
+      "id": 1,
+      "referral_code": "REF-2026-8801",
+      "patient_id": 1,
+      "referring_doctor_id": 10,
+      "receiving_doctor_id": 1,
+      "destination_hospital_id": 1,
+      "required_specialty": "Cardiologist",
+      "required_facility": "ICU & Cardiac Catheterization Lab",
+      "status": "SENT",
+      "clinical_notes": "Patient presented with acute retrosternal chest pain and ECG changes. Facility at CHC Ballabhgarh lacks cardiac ICU beds. Referral initiated for emergency coronary evaluation and ICU admission.",
+      "created_at": "2026-08-30T04:42:57.462Z",
+      "updated_at": "2026-08-30T04:42:57.462Z",
+      "status_history": [
+        {
+          "status": "SENT",
+          "updated_by": "Dr. Sunita Rani",
+          "timestamp": "2026-08-30T04:42:57.462Z"
+        }
+      ]
+    }
+  ],
+  "audit_logs": [
+    {
+      "id": 1,
+      "actor_id": 2,
+      "actor_role": "doctor",
+      "actor_name": "Dr. Sunita Rani",
+      "action": "CREATE_REFERRAL",
+      "resource_type": "Referral",
+      "resource_id": "REF-2026-8801",
+      "result": "SUCCESS",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-08-30T04:42:57.462Z"
+    }
+  ]
+}
