@@ -4,7 +4,7 @@
   "description": "Integrated Healthcare Discovery and Clinical Continuity Platform API",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "seed": "ts-node src/seed.ts"
