@@ -5,11 +5,11 @@
   "description": "Sanjeevani Citizen Healthcare Portal & Server",
   "scripts": {
     "dev:server": "npm --prefix server run dev",
-    "dev:user": "npm --prefix user-app run run dev",
+    "dev:user": "npm --prefix user-app run dev",
     "dev": "concurrently --kill-others -n \"SERVER,USER-APP\" -c \"blue,emerald\" \"npm run dev:server\" \"npm run dev:user\"",
     "build:server": "npm --prefix server run build",
     "build:user": "npm --prefix user-app run build",
-    "build": "npm run build:server && npm run build:user"
+    "build": "npm install && npm --prefix server install && npm --prefix user-app install && npm run build:server && npm run build:user"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
