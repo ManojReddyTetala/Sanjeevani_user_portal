@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Building2, Stethoscope, FileText, Sparkles, X, ChevronRight } from 'lucide-react';
 import { fetchSearchSuggestions } from '../api';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SearchAutocompleteInputProps {
   value: string;
@@ -15,14 +16,17 @@ export const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = (
   value,
   onChange,
   onSelectSuggestion,
-  placeholder = 'Search hospitals, doctors, tests, or specialties...',
+  placeholder,
   lat,
   lng
 }) => {
+  const { t } = useLanguage();
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const activePlaceholder = placeholder || t('search_placeholder_global');
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -82,7 +86,7 @@ export const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = (
           onFocus={() => {
             if (suggestions.length > 0) setIsOpen(true);
           }}
-          placeholder={placeholder}
+          placeholder={activePlaceholder}
           className="w-full pl-9 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00695C] focus:border-[#00695C] bg-white text-[#263238] placeholder-slate-400"
         />
         {value && (
@@ -110,29 +114,28 @@ export const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = (
             <button
               key={idx}
               onClick={() => {
-                setIsOpen(false);
                 if (onSelectSuggestion) onSelectSuggestion(item);
-                else onChange(item.text);
+                setIsOpen(false);
               }}
-              className="w-full p-3 text-left hover:bg-emerald-50/60 transition-colors flex items-center justify-between group"
+              className="w-full px-3 py-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group"
             >
-              <div className="flex items-center space-x-3 pr-2">
-                <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-white border border-slate-100 transition-colors">
-                  {getCategoryIcon(item.category)}
-                </div>
-                <div>
-                  <span className="font-extrabold text-slate-900 text-xs block group-hover:text-emerald-800">
-                    {item.text}
-                  </span>
-                  <span className="text-[11px] text-slate-500 block leading-tight">{item.subtitle}</span>
+              <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                {getCategoryIcon(item.category)}
+                <div className="min-w-0">
+                  <div className="text-xs font-extrabold text-slate-800 truncate group-hover:text-[#00695C] transition-colors">
+                    {item.title}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium truncate">
+                    {item.subtitle}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 shrink-0">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getBadgeStyle(item.category)}`}>
+              <div className="flex items-center space-x-1.5 shrink-0">
+                <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${getBadgeStyle(item.category)}`}>
                   {item.category}
                 </span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-600" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#00695C] transition-colors" />
               </div>
             </button>
           ))}

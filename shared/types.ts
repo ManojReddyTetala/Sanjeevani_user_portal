@@ -1,5 +1,9 @@
-export type RoleName = 'PHC_MASTER' | 'HOSPITAL_ADMIN' | 'DOCTOR' | 'PATIENT';
-export type LanguageCode = 'en' | 'hi' | 'bn' | 'ta' | 'te' | 'mr' | 'gu' | 'kn';
+export type RoleName = 'PHC_MASTER' | 'HOSPITAL_ADMIN' | 'DOCTOR' | 'PATIENT' | 'NURSE' | 'DIAGNOSTIC_STAFF' | 'SUPPLY_STAFF' | 'AMBULANCE_STAFF';
+export type HospitalRole = 'ADMIN' | 'DOCTOR' | 'NURSE' | 'DIAGNOSTIC' | 'SUPPLY' | 'AMBULANCE' | 'REFERRAL' | 'EMERGENCY';
+export type LanguageCode =
+  | 'en' | 'hi' | 'bn' | 'ta' | 'te' | 'mr' | 'gu' | 'kn' | 'ml' | 'pa' | 'or' | 'as'
+  | 'ur' | 'mai' | 'sat' | 'brx' | 'doi' | 'ks' | 'kok' | 'mni' | 'ne' | 'sa' | 'sd'
+  | 'gon' | 'bhi' | 'grt' | 'kha' | 'lus' | 'hoc' | 'unr' | 'kru';
 
 export interface AuditLog {
   id: number;
@@ -86,11 +90,50 @@ export interface HospitalResource {
   hospital_id: number;
   icu_beds: number;
   general_beds: number;
+  occupied_beds?: number;
+  general_ward_beds?: number;
   oxygen_cylinders: number;
   ambulances: number;
   doctors_on_duty: number;
+  nurses_on_duty?: number;
+  icu_facility_status?: 'AVAILABLE' | 'LIMITED' | 'UNAVAILABLE';
+  opd_queue_count?: number;
+  opd_queue_status?: 'SHORT' | 'MODERATE' | 'LONG';
   status: 'AVAILABLE' | 'LIMITED' | 'UNAVAILABLE';
   last_updated: string;
+}
+
+export interface PhcMedicine {
+  id: number;
+  hospital_id: number;
+  name: string;
+  category: string;
+  status: 'AVAILABLE' | 'LIMITED' | 'UNAVAILABLE';
+  stock_level: string;
+  last_updated: string;
+}
+
+export interface PhcStaffMember {
+  id: number;
+  hospital_id: number;
+  name: string;
+  role_title: string;
+  specialty?: string;
+  is_on_duty: number;
+  phone?: string;
+  shift?: string;
+  last_updated?: string;
+}
+
+export interface PhcOverviewData {
+  facility: Hospital;
+  resources: HospitalResource;
+  staff: PhcStaffMember[];
+  doctors: Doctor[];
+  medicines: PhcMedicine[];
+  diagnostics: DiagnosticService[];
+  recentReferrals: Referral[];
+  timestamp?: string;
 }
 
 export interface Doctor {
@@ -235,4 +278,186 @@ export interface HealthTrack {
   updated_at: string;
   completed_at?: string;
   tasks?: HealthTrackTask[];
+}
+
+export interface EmergencyRequest {
+  id: number;
+  patient_id: number;
+  patient_name: string;
+  patient_age?: number;
+  patient_blood_group?: string;
+  patient_phone?: string;
+  health_id?: string;
+  facility_id: number;
+  facility_name: string;
+  facility_type: string;
+  latitude: number;
+  longitude: number;
+  patient_accuracy_m?: number;
+  patient_last_updated?: string;
+  distance_km?: number;
+  priority?: 'CRITICAL' | 'URGENT' | 'ROUTINE';
+  description?: string;
+  status: 'CREATED' | 'SENT' | 'RECEIVED' | 'ACKNOWLEDGED' | 'ACCEPTED' | 'AMBULANCE_DISPATCHED' | 'REFERRED' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
+  ambulance_status?: 'NOT_DISPATCHED' | 'DISPATCHED' | 'ARRIVED' | 'COMPLETED';
+  ambulance_code?: string;
+  ambulance_lat?: number;
+  ambulance_lng?: number;
+  ambulance_speed_kmh?: number;
+  ambulance_heading?: number;
+  ambulance_accuracy_m?: number;
+  ambulance_lifecycle_state?: 'AVAILABLE' | 'ASSIGNED' | 'DISPATCHED' | 'EN_ROUTE_TO_PATIENT' | 'ARRIVED_AT_PATIENT' | 'PATIENT_PICKED_UP' | 'EN_ROUTE_TO_HOSPITAL' | 'ARRIVED' | 'RESOLVED';
+  ambulance_last_updated?: string;
+  assigned_doctor?: string;
+  assigned_driver?: string;
+  eta_minutes?: number;
+  created_at: string;
+  updated_at: string;
+  acknowledged_at?: string;
+  resolved_at?: string;
+  phc_notes?: string;
+  resolution_notes?: string;
+  referral_id?: number;
+}
+
+export interface EquipmentItem {
+  id: number;
+  hospital_id: number;
+  name: string;
+  category: string;
+  status: 'OPERATIONAL' | 'LIMITED' | 'DOWN';
+  last_inspected?: string;
+  notes?: string;
+}
+
+export interface MedicalSupply {
+  id: number;
+  hospital_id: number;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  status: 'AVAILABLE' | 'LIMITED' | 'UNAVAILABLE';
+  stock_level: string;
+  last_updated: string;
+}
+
+export interface NurseTask {
+  id: number;
+  hospital_id: number;
+  patient_id?: number;
+  patient_name?: string;
+  bed_number?: string;
+  title: string;
+  priority: 'CRITICAL' | 'URGENT' | 'ROUTINE';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  assigned_nurse?: string;
+  shift: string;
+  due_time?: string;
+}
+
+export interface SpecialistAvailability {
+  id: number;
+  hospital_id: number;
+  specialty: string;
+  available_count: number;
+  total_count: number;
+  status: 'AVAILABLE' | 'LIMITED' | 'UNAVAILABLE';
+  on_call_doctor?: string;
+}
+
+export interface DiagnosticOrder {
+  id: number;
+  hospital_id: number;
+  patient_id: number;
+  patient_name: string;
+  doctor_id?: number;
+  doctor_name?: string;
+  test_id?: number;
+  test_name: string;
+  priority: 'CRITICAL' | 'PRIORITY' | 'ROUTINE';
+  status: 'ORDERED' | 'SAMPLE_COLLECTED' | 'PROCESSING' | 'COMPLETED';
+  result_summary?: string;
+  report_url?: string;
+  created_at: string;
+  completed_at?: string;
+}
+
+export interface BedUnit {
+  id: number;
+  hospital_id: number;
+  ward_name: string;
+  bed_number: string;
+  bed_type: 'GENERAL' | 'ICU' | 'OXYGEN' | 'EMERGENCY';
+  status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED_EMERGENCY' | 'MAINTENANCE';
+  patient_id?: number;
+  patient_name?: string;
+  reserved_emergency_id?: number;
+  last_updated: string;
+}
+
+export interface PatientConsentGrant {
+  id: number;
+  patient_id: number;
+  health_id: string;
+  doctor_id?: number;
+  doctor_name: string;
+  hospital_name: string;
+  scopes_json: string;
+  duration_minutes: number;
+  granted_at: string;
+  expires_at: string;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+}
+
+export interface AccessAuditLog {
+  id: number;
+  patient_id: number;
+  health_id: string;
+  accessor_name: string;
+  accessor_role: string;
+  facility_name: string;
+  action: string;
+  resource_accessed: string;
+  timestamp: string;
+}
+
+export interface Escalation {
+  id: number;
+  hospital_id: number;
+  patient_id?: number;
+  patient_name: string;
+  room_number: string;
+  nurse_name: string;
+  doctor_id?: number;
+  doctor_name?: string;
+  priority: 'CRITICAL' | 'URGENT';
+  reason: string;
+  status: 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED';
+  created_at: string;
+  resolved_at?: string;
+}
+
+export interface HospitalCapabilityCheckResult {
+  hospital_id: number;
+  hospital_name: string;
+  can_handle: boolean;
+  score: number;
+  breakdown: {
+    specialist_available: boolean;
+    icu_available: boolean;
+    bed_available: boolean;
+    equipment_available: boolean;
+    ambulance_available: boolean;
+    medicines_available: boolean;
+  };
+  recommendation: string;
+  matching_hospitals?: Array<{
+    id: number;
+    name: string;
+    distance_km: number;
+    match_score: number;
+    has_specialist: boolean;
+    has_icu: boolean;
+  }>;
 }

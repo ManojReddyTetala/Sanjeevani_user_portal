@@ -1,4 +1,2 @@
-node_modules/
-**/node_modules/
-.env
-dist/
+printf "node_modules/\n**/node_modules/\n.env\ndist/\n" > .gitignore
+node_modules

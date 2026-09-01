@@ -11,35 +11,41 @@ import {
   Send,
   MoreHorizontal,
   X,
-  Search,
   ChevronRight,
-  ShieldCheck,
-  MapPin
+  ShieldCheck
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface BottomNavProps {
   activeView: string;
   setActiveView: (view: 'home' | 'hospitals' | 'doctors' | 'diagnostics' | 'identity' | 'records' | 'referrals' | 'profile' | 'statistics' | 'emergency' | 'health_track') => void;
+  isOffline?: boolean;
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
+export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView, isOffline = false }) => {
+  const { t } = useLanguage();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  const mainNavItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'health_track', label: 'Track', icon: Activity },
-    { id: 'hospitals', label: 'Healthcare', icon: Building2 },
-    { id: 'records', label: 'Records', icon: FileText },
-    { id: 'more', label: 'More', icon: MoreHorizontal }
-  ];
+  const mainNavItems = isOffline
+    ? [
+        { id: 'emergency', label: t('emergency'), icon: AlertTriangle },
+        { id: 'identity', label: t('health_id'), icon: QrCode }
+      ]
+    : [
+        { id: 'home', label: t('home'), icon: Home },
+        { id: 'health_track', label: t('health_track'), icon: Activity },
+        { id: 'hospitals', label: t('find_hospitals'), icon: Building2 },
+        { id: 'records', label: t('health_records'), icon: FileText },
+        { id: 'more', label: '☰', icon: MoreHorizontal }
+      ];
 
   const moreMenuItems = [
-    { id: 'emergency', label: 'Emergency 108 Assistance', desc: 'Trauma hotline & nearest emergency', icon: AlertTriangle, color: 'text-red-600 bg-red-50 border-red-200' },
-    { id: 'doctors', label: 'Find Doctor & Specialists', desc: 'Browse specialties & duty doctors', icon: Stethoscope, color: 'text-teal-700 bg-teal-50 border-teal-200' },
-    { id: 'diagnostics', label: 'Diagnostic Facilities', desc: 'MRI, CT scan & lab services', icon: FileText, color: 'text-blue-700 bg-blue-50 border-blue-200' },
-    { id: 'identity', label: 'My Health ID & QR', desc: 'Permanent Health Token & QR Code', icon: QrCode, color: 'text-purple-700 bg-purple-50 border-purple-200' },
-    { id: 'referrals', label: 'My Inter-Facility Referrals', desc: 'Track PHC & hospital transfer status', icon: Send, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    { id: 'statistics', label: 'Health Statistics', desc: 'EHR records analysis & vitals data', icon: Activity, color: 'text-[#00695C] bg-[#E0F2F1] border-[#00695C]/20' },
+    { id: 'emergency', label: t('emergency'), desc: 'Trauma hotline & nearest emergency', icon: AlertTriangle, color: 'text-red-600 bg-red-50 border-red-200' },
+    { id: 'doctors', label: t('find_doctor'), desc: 'Browse specialties & duty doctors', icon: Stethoscope, color: 'text-teal-700 bg-teal-50 border-teal-200' },
+    { id: 'diagnostics', label: t('find_test'), desc: 'MRI, CT scan & lab services', icon: FileText, color: 'text-blue-700 bg-blue-50 border-blue-200' },
+    { id: 'identity', label: t('health_id'), desc: 'Permanent Health Token & QR Code', icon: QrCode, color: 'text-purple-700 bg-purple-50 border-purple-200' },
+    { id: 'referrals', label: t('referrals'), desc: 'Track PHC & hospital transfer status', icon: Send, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+    { id: 'statistics', label: t('statistics'), desc: 'EHR records analysis & vitals data', icon: Activity, color: 'text-[#00695C] bg-[#E0F2F1] border-[#00695C]/20' },
     { id: 'profile', label: 'User Profile & Settings', desc: 'Authenticated patient account session', icon: User, color: 'text-slate-700 bg-slate-100 border-slate-200' }
   ];
 
@@ -54,8 +60,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
 
   return (
     <>
-      {/* Mobile Bottom Sheet Drawer for "More" */}
-      {showMoreMenu && (
+      {/* Mobile Bottom Sheet Drawer for "More" (Only in Online Mode) */}
+      {!isOffline && showMoreMenu && (
         <div className="md:hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex flex-col justify-end animate-in fade-in duration-200">
           <div
             className="bg-white rounded-t-3xl border-t border-slate-200 shadow-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-full duration-300 relative"
@@ -66,7 +72,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-5 h-5 text-[#00695C]" />
-                <h3 className="font-black text-base text-[#263238]">Sanjeevani Citizen Services</h3>
+                <h3 className="font-black text-base text-[#263238]">{t('app_title')}</h3>
               </div>
               <button
                 onClick={() => setShowMoreMenu(false)}
@@ -97,8 +103,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-xs text-[#263238] block">{item.label}</span>
-                        <span className="text-[11px] text-[#607D8B] font-medium">{item.desc}</span>
+                        <div className="font-black text-xs text-[#263238]">{item.label}</div>
+                        <div className="text-[10px] text-slate-500 font-medium">{item.desc}</div>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -110,27 +116,39 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
         </div>
       )}
 
-      {/* Main 5-Item Thumb-Friendly Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl px-2 py-1 flex items-center justify-around h-16">
-        {mainNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeView === item.id || (item.id === 'more' && showMoreMenu);
+      {/* Main Fixed Bottom Bar Navigation */}
+      <nav
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t shadow-2xl transition-colors ${
+          isOffline ? 'bg-amber-900 border-amber-800 text-white' : 'bg-white border-slate-200 text-slate-700'
+        }`}
+      >
+        <div className="max-w-md mx-auto px-2 py-1.5 flex items-center justify-around">
+          {mainNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id || (item.id === 'more' && showMoreMenu);
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleNavClick(item.id)}
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-2 py-1 rounded-2xl transition-all ${
-                isActive
-                  ? 'text-[#00695C] bg-[#E0F2F1] font-extrabold shadow-xs'
-                  : 'text-[#607D8B] hover:text-[#263238] font-medium'
-              }`}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-[#00695C]' : 'text-[#607D8B]'}`} />
-              <span className="text-[10px] mt-0.5 tracking-tight font-extrabold">{item.label}</span>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`flex-1 py-1 px-1 flex flex-col items-center justify-center space-y-0.5 rounded-2xl transition-all ${
+                  isActive
+                    ? isOffline
+                      ? 'text-amber-300 font-black scale-105'
+                      : 'text-[#00695C] font-black scale-105'
+                    : isOffline
+                    ? 'text-amber-100/70 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? (isOffline ? 'text-amber-300' : 'text-[#00695C]') : ''}`} />
+                <span className="text-[10px] tracking-tight truncate max-w-[64px] font-extrabold">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
     </>
   );

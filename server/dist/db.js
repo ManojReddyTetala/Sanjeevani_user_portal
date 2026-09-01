@@ -213,7 +213,169 @@ function initTables(db) {
       ip_address TEXT NOT NULL,
       timestamp TEXT NOT NULL
     );
-  `);
+
+    CREATE TABLE IF NOT EXISTS emergency_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      patient_id INTEGER NOT NULL,
+      patient_name TEXT NOT NULL,
+      health_id TEXT,
+      facility_id INTEGER NOT NULL,
+      facility_name TEXT NOT NULL,
+      facility_type TEXT NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL DEFAULT 'CREATED',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      acknowledged_at TEXT,
+      resolved_at TEXT,
+      phc_notes TEXT,
+      referral_id INTEGER,
+      FOREIGN KEY (patient_id) REFERENCES patients(id),
+      FOREIGN KEY (facility_id) REFERENCES hospitals(id)
+    );
+    CREATE TABLE IF NOT EXISTS phc_medicines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hospital_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'AVAILABLE',
+      stock_level TEXT DEFAULT 'Adequate',
+      last_updated TEXT NOT NULL,
+      FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS phc_staff (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hospital_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      role_title TEXT NOT NULL,
+      specialty TEXT,
+      is_on_duty INTEGER NOT NULL DEFAULT 1,
+      phone TEXT,
+      shift TEXT DEFAULT 'Morning',
+      last_updated TEXT,
+      FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS hospital_equipment (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hospital_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'OPERATIONAL',
+      last_inspected TEXT,
+      notes TEXT,
+      FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS medical_supplies (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hospital_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 100,
+      unit TEXT NOT NULL DEFAULT 'units',
+      status TEXT NOT NULL DEFAULT 'AVAILABLE',
+      stock_level TEXT DEFAULT 'Adequate',
+      last_updated TEXT NOT NULL,
+      FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS nurse_tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hospital_id INTEGER NOT NULL,
+      patient_id INTEGER,
+      patient_name TEXT,
+      bed_number TEXT,
+      title TEXT NOT NULL,
+      priority TEXT NOT NULL DEFAULT 'ROUTINE',
+      status TEXT NOT NULL DEFAULT 'PENDING',
+      assigned_nurse TEXT,
+      shift TEXT DEFAULT 'Morning',
+      due_time TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+    );
+      CREATE TABLE IF NOT EXISTS diagnostic_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hospital_id INTEGER NOT NULL,
+        patient_id INTEGER NOT NULL,
+        patient_name TEXT NOT NULL,
+        doctor_id INTEGER,
+        doctor_name TEXT,
+        test_id INTEGER,
+        test_name TEXT NOT NULL,
+        priority TEXT NOT NULL DEFAULT 'ROUTINE',
+        status TEXT NOT NULL DEFAULT 'ORDERED',
+        result_summary TEXT,
+        report_url TEXT,
+        created_at TEXT NOT NULL,
+        completed_at TEXT,
+        FOREIGN KEY (hospital_id) REFERENCES hospitals(id),
+        FOREIGN KEY (patient_id) REFERENCES patients(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS bed_units (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hospital_id INTEGER NOT NULL,
+        ward_name TEXT NOT NULL,
+        bed_number TEXT NOT NULL,
+        bed_type TEXT NOT NULL DEFAULT 'GENERAL',
+        status TEXT NOT NULL DEFAULT 'AVAILABLE',
+        patient_id INTEGER,
+        patient_name TEXT,
+        reserved_emergency_id INTEGER,
+        last_updated TEXT NOT NULL,
+        FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS patient_consent_grants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        health_id TEXT NOT NULL,
+        doctor_id INTEGER,
+        doctor_name TEXT NOT NULL,
+        hospital_name TEXT NOT NULL,
+        scopes_json TEXT NOT NULL,
+        duration_minutes INTEGER NOT NULL DEFAULT 30,
+        granted_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'ACTIVE',
+        FOREIGN KEY (patient_id) REFERENCES patients(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS access_audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        health_id TEXT NOT NULL,
+        accessor_name TEXT NOT NULL,
+        accessor_role TEXT NOT NULL,
+        facility_name TEXT NOT NULL,
+        action TEXT NOT NULL,
+        resource_accessed TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (patient_id) REFERENCES patients(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS escalations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hospital_id INTEGER NOT NULL,
+        patient_id INTEGER,
+        patient_name TEXT NOT NULL,
+        room_number TEXT NOT NULL,
+        nurse_name TEXT NOT NULL,
+        doctor_id INTEGER,
+        doctor_name TEXT,
+        priority TEXT NOT NULL DEFAULT 'CRITICAL',
+        reason TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'ACTIVE',
+        created_at TEXT NOT NULL,
+        resolved_at TEXT,
+        FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+      );
+    `);
     // Safe migrations for pre-existing tables
     const safeAlter = (table, column, def) => {
         try {
@@ -228,8 +390,34 @@ function initTables(db) {
     safeAlter('users', 'is_active', 'INTEGER NOT NULL DEFAULT 1');
     safeAlter('patients', 'address', 'TEXT');
     safeAlter('hospitals', 'is_active', 'INTEGER NOT NULL DEFAULT 1');
+    safeAlter('hospital_resources', 'occupied_beds', 'INTEGER NOT NULL DEFAULT 0');
+    safeAlter('hospital_resources', 'general_ward_beds', 'INTEGER NOT NULL DEFAULT 20');
+    safeAlter('hospital_resources', 'nurses_on_duty', 'INTEGER NOT NULL DEFAULT 4');
+    safeAlter('hospital_resources', 'icu_facility_status', 'TEXT NOT NULL DEFAULT "AVAILABLE"');
+    safeAlter('hospital_resources', 'opd_queue_count', 'INTEGER NOT NULL DEFAULT 8');
+    safeAlter('hospital_resources', 'opd_queue_status', 'TEXT NOT NULL DEFAULT "SHORT"');
     safeAlter('doctors', 'department', 'TEXT');
     safeAlter('doctors', 'is_active', 'INTEGER NOT NULL DEFAULT 1');
+    safeAlter('emergency_requests', 'patient_age', 'INTEGER DEFAULT 28');
+    safeAlter('emergency_requests', 'patient_blood_group', 'TEXT DEFAULT "O+"');
+    safeAlter('emergency_requests', 'patient_phone', 'TEXT DEFAULT "+91-9876543210"');
+    safeAlter('emergency_requests', 'distance_km', 'REAL DEFAULT 3.4');
+    safeAlter('emergency_requests', 'priority', 'TEXT DEFAULT "CRITICAL"');
+    safeAlter('emergency_requests', 'ambulance_status', 'TEXT DEFAULT "NOT_DISPATCHED"');
+    safeAlter('emergency_requests', 'ambulance_code', 'TEXT DEFAULT "AMB-07"');
+    safeAlter('emergency_requests', 'ambulance_lat', 'REAL DEFAULT 17.0198');
+    safeAlter('emergency_requests', 'ambulance_lng', 'REAL DEFAULT 82.1292');
+    safeAlter('emergency_requests', 'ambulance_speed_kmh', 'REAL DEFAULT 42.0');
+    safeAlter('emergency_requests', 'ambulance_heading', 'INTEGER DEFAULT 78');
+    safeAlter('emergency_requests', 'ambulance_accuracy_m', 'REAL DEFAULT 4.5');
+    safeAlter('emergency_requests', 'ambulance_lifecycle_state', 'TEXT DEFAULT "AVAILABLE"');
+    safeAlter('emergency_requests', 'patient_accuracy_m', 'REAL DEFAULT 6.0');
+    safeAlter('emergency_requests', 'patient_last_updated', 'TEXT');
+    safeAlter('emergency_requests', 'ambulance_last_updated', 'TEXT');
+    safeAlter('emergency_requests', 'assigned_doctor', 'TEXT');
+    safeAlter('emergency_requests', 'assigned_driver', 'TEXT');
+    safeAlter('emergency_requests', 'eta_minutes', 'INTEGER');
+    safeAlter('emergency_requests', 'resolution_notes', 'TEXT');
     safeAlter('audit_logs', 'previous_value', 'TEXT');
     safeAlter('audit_logs', 'new_value', 'TEXT');
 }

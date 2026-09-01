@@ -57,6 +57,9 @@ import { HealthStatisticsView } from './components/HealthStatisticsView';
 import { EmergencyView } from './components/EmergencyView';
 import { HealthTrackView } from './components/HealthTrackView';
 import { SmartModuleSearch, SearchResultItem } from './components/SmartModuleSearch';
+import { PhcPortal } from './components/phc/PhcPortal';
+import { HospitalPortal } from './components/hospital/HospitalPortal';
+import { MinimalCitizenPortal } from './components/citizen/MinimalCitizenPortal';
 import { Hospital, Patient, MedicalRecord, Referral } from './types';
 import {
   fetchNearbyHospitals,
@@ -386,6 +389,7 @@ export const CitizenAppContent: React.FC = () => {
 
   // Active View Router
   const [activeView, setActiveView] = useState<'home' | 'hospitals' | 'doctors' | 'diagnostics' | 'identity' | 'records' | 'referrals' | 'profile' | 'statistics' | 'emergency' | 'health_track'>('home');
+  const [portalMode, setPortalMode] = useState<'CITIZEN' | 'PHC' | 'HOSPITAL'>('HOSPITAL');
 
   // Radius & Sorting Controls
   const [radiusKm, setRadiusKm] = useState(50);
@@ -412,6 +416,31 @@ export const CitizenAppContent: React.FC = () => {
   const [recordSearch, setRecordSearch] = useState('');
   const [referralSearch, setReferralSearch] = useState('');
   const [healthcareMobileTab, setHealthcareMobileTab] = useState<'list' | 'map'>('list');
+
+  // Offline Mode State & Network Event Listeners
+  const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => {
+      setIsOffline(true);
+      setActiveView('emergency');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOffline && activeView !== 'emergency' && activeView !== 'identity') {
+      setActiveView('emergency');
+    }
+  }, [isOffline, activeView]);
 
   const handleSelectHealthcareResult = (item: SearchResultItem) => {
     if (item.action_data?.hospital_id) {
@@ -532,10 +561,19 @@ export const CitizenAppContent: React.FC = () => {
     };
   }, [location, radiusKm, statusFilter, sortBy, permissionStatus]);
 
-  const handleLoginSuccess = (user: any, patient: Patient, token: string) => {
+  const handleLoginSuccess = (user: any, patient: Patient, token: string, targetPortalMode?: 'CITIZEN' | 'PHC' | 'HOSPITAL') => {
     const session = { token, user, patient };
     setAuthSession(session);
     localStorage.setItem('sih_patient_session', JSON.stringify(session));
+    if (targetPortalMode) {
+      setPortalMode(targetPortalMode);
+    } else if (user.role === 'HOSPITAL_ADMIN' || user.role === 'DOCTOR') {
+      setPortalMode('HOSPITAL');
+    } else if (user.role === 'PHC_MASTER') {
+      setPortalMode('PHC');
+    } else {
+      setPortalMode('CITIZEN');
+    }
     setCurrentPatient(patient);
     setEditName(patient.name);
     setEditAge(patient.age || 28);
@@ -738,6 +776,42 @@ export const CitizenAppContent: React.FC = () => {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
+  // --- RENDER DEDICATED CONNECTED HOSPITAL OPERATING SYSTEM ---
+  if (portalMode === 'HOSPITAL') {
+    return (
+      <HospitalPortal
+        onSwitchToCitizenApp={() => setPortalMode('CITIZEN')}
+        staffUser={authSession.user}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  // --- RENDER DEDICATED ACCESSIBILITY-FIRST PHC OPERATIONAL PORTAL ---
+  if (portalMode === 'PHC') {
+    return (
+      <PhcPortal
+        onSwitchToCitizenApp={() => setPortalMode('CITIZEN')}
+        staffUser={authSession.user}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  // --- RENDER DEDICATED MINIMALIST CITIZEN HEALTH PORTAL ---
+  if (portalMode === 'CITIZEN') {
+    return (
+      <MinimalCitizenPortal
+        patient={authSession.patient}
+        hospitals={hospitals.length > 0 ? hospitals : DEMO_FALLBACK_HOSPITALS}
+        records={patientRecords.length > 0 ? patientRecords : DEFAULT_MANOJ_RECORDS}
+        onSwitchToHospitalOs={() => setPortalMode('HOSPITAL')}
+        onSwitchToPhcPortal={() => setPortalMode('PHC')}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   // --- RENDER LOCATION PERMISSION SCREEN IF PROMPT ---
   if (permissionStatus === 'prompt') {
     return (
@@ -757,13 +831,18 @@ export const CitizenAppContent: React.FC = () => {
     <div className={`min-h-screen bg-[#F7FAF9] text-[#263238] flex flex-col font-sans ${highContrast ? 'contrast-125' : ''}`}>
       {/* Top Navbar */}
       <Navbar
-        currentSession={{ id: authSession.user.id, name: activePatientName, patient_id: authSession.patient.id }}
+        currentSession={authSession?.user ? { id: authSession.user.id, name: activePatientName, patient_id: authSession.patient.id } : null}
         onLogout={handleLogout}
         onOpenProfile={() => setActiveView('profile')}
         onOpenEmergency={() => setActiveView('emergency')}
         onOpenHealthTrack={() => setActiveView('health_track')}
+        onOpenQrPortal={() => setActiveView('identity')}
+        onOpenPhcPortal={() => setPortalMode('PHC')}
+        onOpenHospitalPortal={() => setPortalMode('HOSPITAL')}
         highContrast={highContrast}
         setHighContrast={setHighContrast}
+        isOffline={isOffline}
+        setIsOffline={setIsOffline}
       />
 
       {/* Dynamic Location Status Bar */}
@@ -771,11 +850,11 @@ export const CitizenAppContent: React.FC = () => {
         <div className="flex items-center space-x-2">
           <MapPin className="w-4 h-4 text-[#00695C]" />
           <span className="font-bold text-[#263238]">
-            {isGpsActive ? '📍 Current Location:' : '📍 Selected Location:'}
+            {isGpsActive ? `📍 ${t('current_location')}:` : `📍 ${t('selected_location')}:`}
           </span>
           <span className="text-[#607D8B] font-medium">{location.label}</span>
           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${isGpsActive ? 'bg-[#E0F2F1] text-[#00695C] border border-[#00695C]/20' : 'bg-amber-50 text-[#F57C00] border border-[#F57C00]/20'}`}>
-            {isGpsActive ? 'GPS ACTIVE' : 'MANUAL LOCATION'}
+            {isGpsActive ? t('gps_active_badge') : t('manual_location_badge')}
           </span>
         </div>
 
@@ -784,12 +863,12 @@ export const CitizenAppContent: React.FC = () => {
             onClick={() => setShowLocationModal(true)}
             className="px-3 py-1 bg-[#E0F2F1] hover:bg-[#b2dfdb] text-[#00695C] rounded-lg text-xs font-bold transition-colors border border-[#00695C]/20"
           >
-            Change Location
+            {t('change_location')}
           </button>
         </div>
       </div>
 
-      <OfflineBanner />
+      <OfflineBanner isOffline={isOffline} setIsOffline={setIsOffline} />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6 space-y-6">
@@ -797,22 +876,31 @@ export const CitizenAppContent: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
           {/* Main Module Tabs */}
           <div className="flex items-center space-x-1 overflow-x-auto scrollbar-thin">
-            {[
-              { id: 'home', label: 'Home' },
-              { id: 'hospitals', label: 'Healthcare' },
-              { id: 'doctors', label: 'Doctors' },
-              { id: 'diagnostics', label: 'Diagnostics' },
-              { id: 'identity', label: 'Health ID' },
-              { id: 'records', label: 'Records' },
-              { id: 'statistics', label: '📊 Statistics' },
-              { id: 'referrals', label: 'Referrals' }
-            ].map((tab) => (
+            {(isOffline
+              ? [
+                  { id: 'emergency', label: `🚑 ${t('emergency')}` },
+                  { id: 'identity', label: `🪪 ${t('health_id')}` }
+                ]
+              : [
+                  { id: 'home', label: t('home') },
+                  { id: 'hospitals', label: t('find_hospitals') },
+                  { id: 'doctors', label: t('find_doctor') },
+                  { id: 'diagnostics', label: t('find_test') },
+                  { id: 'health_track', label: `🩺 ${t('health_track')}` },
+                  { id: 'identity', label: t('health_id') },
+                  { id: 'records', label: t('health_records') },
+                  { id: 'statistics', label: `📊 ${t('statistics')}` },
+                  { id: 'referrals', label: t('referrals') }
+                ]
+            ).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveView(tab.id as any)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
                   activeView === tab.id
-                    ? 'bg-[#00695C] text-white shadow'
+                    ? isOffline
+                      ? 'bg-red-700 text-white shadow'
+                      : 'bg-[#00695C] text-white shadow'
                     : 'text-[#607D8B] hover:text-[#263238] hover:bg-slate-100'
                 }`}
               >
@@ -821,13 +909,13 @@ export const CitizenAppContent: React.FC = () => {
             ))}
           </div>
 
-          {activeView !== 'home' && (
+          {!isOffline && activeView !== 'home' && (
             <button
               onClick={() => setActiveView('home')}
               className="p-1.5 bg-slate-100 hover:bg-slate-200 text-[#00695C] rounded-xl text-xs font-bold flex items-center space-x-1 shrink-0 border border-slate-200"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Dashboard</span>
+              <span>{t('back_to_dashboard')}</span>
             </button>
           )}
         </div>
@@ -841,10 +929,10 @@ export const CitizenAppContent: React.FC = () => {
               <div className="flex justify-between items-start pt-1">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-black text-[#263238]">
-                    Good afternoon, {activePatientName} 👋
+                    {t('greeting_afternoon')}, {activePatientName} 👋
                   </h2>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Sanjeevani Health ID: <span className="font-mono text-[#00695C] font-bold">{activePatientUid}</span>
+                    {t('sanjeevani_health_id')}: <span className="font-mono text-[#00695C] font-bold">{activePatientUid}</span>
                   </p>
                 </div>
 
@@ -876,50 +964,48 @@ export const CitizenAppContent: React.FC = () => {
               </div>
             </div>
 
-            {/* 6 Primary Action Cards (Clean White Cards on Soft Light Background) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Featured Card 0: Health Track Care Journey */}
+            {/* Primary Healthcare Action Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {/* Card 0: Health Track Care Journey */}
               <button
                 onClick={() => setActiveView('health_track')}
-                className="bg-white hover:bg-slate-50 p-6 rounded-3xl border-2 border-[#00695C] transition-all text-left space-y-4 group shadow-md hover:shadow-lg relative overflow-hidden"
+                className="bg-white hover:bg-slate-50 p-6 rounded-3xl border-2 border-[#00695C] transition-all text-left space-y-4 group shadow-sm hover:shadow-md relative overflow-hidden"
               >
-                <div className="bg-[#00695C] text-white px-3 py-1 text-[9px] font-black rounded-br-xl uppercase tracking-wider absolute top-0 left-0">
-                  LIVE CARE TRACKER
-                </div>
-                <div className="w-12 h-12 bg-[#E0F2F1] text-[#00695C] rounded-2xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform mt-2">
-                  <Activity className="w-6 h-6" />
+                <div className="w-10 h-10 bg-[#E0F2F1] text-[#00695C] rounded-xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Activity className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#00695C] transition-colors flex items-center space-x-1.5">
-                    <span>🩺 Health Track</span>
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    🩺 {t('health_track')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Live care journey, next action guide, and report dependency manager.
+                    Live treatment pathway, next required steps & test tracking.
                   </p>
                 </div>
                 <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
-                  <span>Track Treatment Pathway</span>
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
+
               {/* Card 1: Find Healthcare */}
               <button
                 onClick={() => setActiveView('hospitals')}
                 className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-[#E0F2F1] text-[#00695C] rounded-2xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Building2 className="w-6 h-6" />
+                <div className="w-10 h-10 bg-[#E0F2F1] text-[#00695C] rounded-xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#00695C] transition-colors">
-                    🏥 Find Healthcare
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    🏥 {t('find_hospitals')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Find hospitals, PHCs and healthcare facilities near you.
+                    Hospitals, PHCs and healthcare facilities nearby.
                   </p>
                 </div>
                 <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
-                  <span>Explore Facilities</span>
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -929,19 +1015,19 @@ export const CitizenAppContent: React.FC = () => {
                 onClick={() => setActiveView('doctors')}
                 className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-[#E0F2F1] text-[#00695C] rounded-2xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Stethoscope className="w-6 h-6" />
+                <div className="w-10 h-10 bg-[#E0F2F1] text-[#00695C] rounded-xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Stethoscope className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#00695C] transition-colors">
-                    🩺 Find Doctor
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    🩺 {t('find_doctor')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Find doctors and specialties.
+                    Search doctors and clinical specialties.
                   </p>
                 </div>
                 <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
-                  <span>Search Specialists</span>
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -951,19 +1037,19 @@ export const CitizenAppContent: React.FC = () => {
                 onClick={() => setActiveView('diagnostics')}
                 className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-blue-50 text-[#1565C0] rounded-2xl border border-blue-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <FileText className="w-6 h-6" />
+                <div className="w-10 h-10 bg-slate-100 text-[#00695C] rounded-xl border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#1565C0] transition-colors">
-                    🧪 Diagnostics
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    🧪 {t('find_test')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Find MRI, CT, X-Ray, pathology and other services.
+                    MRI, CT scan, X-Ray and laboratory services.
                   </p>
                 </div>
-                <div className="flex items-center space-x-1 text-xs font-extrabold text-[#1565C0]">
-                  <span>Find Diagnostic Centers</span>
+                <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -973,19 +1059,19 @@ export const CitizenAppContent: React.FC = () => {
                 onClick={() => setActiveView('identity')}
                 className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-purple-50 text-purple-700 rounded-2xl border border-purple-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <QrCode className="w-6 h-6" />
+                <div className="w-10 h-10 bg-slate-100 text-[#00695C] rounded-xl border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <QrCode className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-purple-700 transition-colors">
-                    🪪 My Health ID
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    🪪 {t('health_id')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Health ID and QR.
+                    Digital Health Identity and offline QR token.
                   </p>
                 </div>
-                <div className="flex items-center space-x-1 text-xs font-extrabold text-purple-700">
-                  <span>View Health ID Token</span>
+                <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -995,41 +1081,19 @@ export const CitizenAppContent: React.FC = () => {
                 onClick={() => setActiveView('records')}
                 className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-emerald-50 text-[#2E7D32] rounded-2xl border border-emerald-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Activity className="w-6 h-6" />
+                <div className="w-10 h-10 bg-slate-100 text-[#00695C] rounded-xl border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Activity className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#2E7D32] transition-colors">
-                    📋 My Medical Records
+                  <h3 className="font-black text-base text-[#263238] group-hover:text-[#00695C] transition-colors">
+                    📋 {t('health_records')}
                   </h3>
                   <p className="text-xs text-[#607D8B] mt-1">
-                    Consultations, reports and prescriptions.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-1 text-xs font-extrabold text-[#2E7D32]">
-                  <span>View Health Timeline</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </button>
-
-              {/* Card 6: My Referrals */}
-              <button
-                onClick={() => setActiveView('referrals')}
-                className="bg-white hover:bg-slate-50 p-6 rounded-3xl border border-slate-200 transition-all text-left space-y-4 group shadow-sm hover:shadow-md"
-              >
-                <div className="w-12 h-12 bg-[#E0F2F1] text-[#00695C] rounded-2xl border border-[#00695C]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Send className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg text-[#263238] group-hover:text-[#00695C] transition-colors">
-                    📨 My Referrals
-                  </h3>
-                  <p className="text-xs text-[#607D8B] mt-1">
-                    Track healthcare referrals.
+                    Consultations, EHR reports and prescriptions.
                   </p>
                 </div>
                 <div className="flex items-center space-x-1 text-xs font-extrabold text-[#00695C]">
-                  <span>Track Status</span>
+                  <span>{t('view_details')}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -1805,7 +1869,7 @@ export const CitizenAppContent: React.FC = () => {
           <HealthTrackView
             patient={authSession.patient}
             records={patientRecords}
-            onFindFacility={(query, module) => {
+            onFindFacility={(query: string, module: string) => {
               if (module === 'diagnostics') {
                 setDiagnosticSearchInput(query);
                 setActiveView('diagnostics');
@@ -1817,7 +1881,7 @@ export const CitizenAppContent: React.FC = () => {
                 setActiveView('hospitals');
               }
             }}
-            onSelectRecord={(rec) => {
+            onSelectRecord={(rec: any) => {
               setViewingDocRecord(rec);
             }}
           />
@@ -2246,7 +2310,7 @@ export const CitizenAppContent: React.FC = () => {
       />
 
       {/* Mobile Responsive Bottom Navigation Bar */}
-      <BottomNav activeView={activeView} setActiveView={setActiveView} />
+      <BottomNav activeView={activeView} setActiveView={setActiveView} isOffline={isOffline} />
 
       {/* Floating AI Assistant Widget */}
       <AiChatbotWidget onExecuteAction={handleExecuteAiAction} />
